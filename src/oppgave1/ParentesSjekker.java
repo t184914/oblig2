@@ -32,25 +32,6 @@ public class ParentesSjekker {
                (start == '{' && slutt == '}') ||
                (start == '[' && slutt == ']');
     }
+ 
     
-    public static void main(String[] args) {
-        ParentesSjekker sjekker = new ParentesSjekker();
-        String test1 = "{ [ ( ) ] }";
-        String test2 = "{ [ ( ) }";
-        String test3 = "[ ( ) ] }";
-        String test4 = "{ [ ( ] ) }";
-        String javaprogram = """
-            class HelloWorld {
-                public static void main(String[] args) {
-                    System.out.println(\"Hello World!\");
-                }
-            }
-            """;
-         
-        System.out.println(sjekker.sjekkParenteser(test1)); // true
-        System.out.println(sjekker.sjekkParenteser(test2)); // false
-        System.out.println(sjekker.sjekkParenteser(test3)); // false
-        System.out.println(sjekker.sjekkParenteser(test4)); // false
-        System.out.println(sjekker.sjekkParenteser(javaprogram)); // true
-    }
 }
