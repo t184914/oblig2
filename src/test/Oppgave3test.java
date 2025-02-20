@@ -1,41 +1,61 @@
 package test;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import oppgave3.InsertionSort;
-import oppgave3.MergeSort;
-import oppgave3.QuickSort;
-import oppgave3.SelectionSort;
+import oppgave3.SortBenchmark;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.util.Arrays;
+import java.util.Random;
+
 public class Oppgave3test {
-    @Test
-    public void testInsertionSort() {
-        Integer[] arr = {5, 2, 9, 1, 5, 6};
-        InsertionSort.sort(arr);
-        assertArrayEquals(new Integer[]{1, 2, 5, 5, 6, 9}, arr);
-    }
+	  private Integer[] unsortedArray;
+	    private Integer[] expectedSortedArray;
 
-    @Test
-    public void testSelectionSort() {
-        Integer[] arr = {5, 2, 9, 1, 5, 6};
-        SelectionSort.sort(arr);
-        assertArrayEquals(new Integer[]{1, 2, 5, 5, 6, 9}, arr);
-    }
+	    @BeforeEach
+	    void setUp() {
+	        unsortedArray = generateRandomArray(100);
+	        expectedSortedArray = unsortedArray.clone();
+	        Arrays.sort(expectedSortedArray);
+	    }
 
-    @Test
-    public void testQuickSort() {
-        Integer[] arr = {5, 2, 9, 1, 5, 6};
-        QuickSort.sort(arr);
-        assertArrayEquals(new Integer[]{1, 2, 5, 5, 6, 9}, arr);
-    }
+	    @Test
+	    void testInsertionSort() {
+	        Integer[] array = unsortedArray.clone();
+	        SortBenchmark.insertionSort(array);
+	        assertArrayEquals(expectedSortedArray, array, "Insertion Sort failed");
+	    }
 
-    @Test
-    public void testMergeSort() {
-        Integer[] arr = {5, 2, 9, 1, 5, 6};
-        MergeSort.sort(arr);
-        assertArrayEquals(new Integer[]{1, 2, 5, 5, 6, 9}, arr);
-    }
-}
+	    @Test
+	    void testSelectionSort() {
+	        Integer[] array = unsortedArray.clone();
+	        SortBenchmark.selectionSort(array);
+	        assertArrayEquals(expectedSortedArray, array, "Selection Sort failed");
+	    }
+
+	    @Test
+	    void testQuickSort() {
+	        Integer[] array = unsortedArray.clone();
+	        SortBenchmark.quickSort(array);
+	        assertArrayEquals(expectedSortedArray, array, "Quick Sort failed");
+	    }
+
+	    @Test
+	    void testMergeSort() {
+	        Integer[] array = unsortedArray.clone();
+	        SortBenchmark.mergeSort(array);
+	        assertArrayEquals(expectedSortedArray, array, "Merge Sort failed");
+	    }
+
+	    private Integer[] generateRandomArray(int size) {
+	        Random rand = new Random();
+	        Integer[] array = new Integer[size];
+	        for (int i = 0; i < size; i++) {
+	            array[i] = rand.nextInt(1000);
+	        }
+	        return array;
+	    }
+	}
 

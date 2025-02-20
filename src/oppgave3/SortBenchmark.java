@@ -2,13 +2,11 @@ package oppgave3;
 
 import java.util.Random;
 
-import java.util.Arrays;
-import java.util.Random;
-
 public class SortBenchmark {
 
     public static void main(String[] args) {
         int[] sizes = {32000, 64000, 128000};
+   
         
         benchmarkSort("Insertion Sort", sizes, SortBenchmark::insertionSort, n -> (double) (n * n));
         benchmarkSort("Selection Sort", sizes, SortBenchmark::selectionSort, n -> (double) (n * n));
@@ -30,9 +28,16 @@ public class SortBenchmark {
         System.out.println("\n" + name);
         System.out.println("N\tMålt tid (s)\tTeoretisk tid (s)");
 
-        double c = 0;
+        double c = -1;  // Start med en usannsynlig verdi for å fange feil
         for (int i = 0; i < sizes.length; i++) {
             int n = sizes[i];
+
+            // Sjekk at n er gyldig (større enn 0)
+            if (n <= 0) {
+                System.out.println("Feil: n må være større enn 0. Hopper over n = " + n);
+                continue;
+            }
+
             Integer[] array = generateRandomArray(n);
 
             long startTime = System.nanoTime();
@@ -40,16 +45,27 @@ public class SortBenchmark {
             long endTime = System.nanoTime();
 
             double elapsedTime = (endTime - startTime) / 1e9; // Konverter til sekunder
+            double f_n = complexity.compute(n); // Beregn f(n)
 
-            if (i == 0) { // Bruk første måling til å finne c
-                c = elapsedTime / complexity.compute(n);
+            // Sjekk at f_n er gyldig (større enn 0)
+            if (f_n <= 0) {
+                System.out.println("Feil: f(n) ble null eller negativ for n = " + n + ". Hopper over denne målingen.");
+                continue;
             }
 
-            double theoreticalTime = c * complexity.compute(n);
+            if (i == 0) {  // Beregn c fra første måling
+                c = elapsedTime / f_n;
+                // Sjekk at c er gyldig (større enn 0)
+                if (c <= 0) {
+                    System.out.println("Feil: c ble negativ eller null! Bruker standardverdi c = 1.");
+                    c = 1;
+                }
+            }
+
+            double theoreticalTime = c * f_n;
             System.out.printf("%d\t%.6f\t%.6f%n", n, elapsedTime, theoreticalTime);
         }
     }
-
     public static Integer[] generateRandomArray(int size) {
         Random rand = new Random();
         Integer[] array = new Integer[size];
