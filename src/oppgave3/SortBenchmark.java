@@ -2,40 +2,154 @@ package oppgave3;
 
 import java.util.Random;
 
+import java.util.Arrays;
+import java.util.Random;
+
 public class SortBenchmark {
-	public static void main(String[] args) {
+
+    public static void main(String[] args) {
         int[] sizes = {32000, 64000, 128000};
-        for (int size : sizes) {
-            Integer[] arr = generateRandomArray(size);
-            
-            System.out.println("Sorteringsmetode: QuickSort");
-            measureTime(arr.clone(), QuickSort::sort, size, "n log n");
+        
+        benchmarkSort("Insertion Sort", sizes, SortBenchmark::insertionSort, n -> (double) (n * n));
+        benchmarkSort("Selection Sort", sizes, SortBenchmark::selectionSort, n -> (double) (n * n));
+        benchmarkSort("QuickSort", sizes, SortBenchmark::quickSort, n -> n * (Math.log(n) / Math.log(2)));
+        benchmarkSort("MergeSort", sizes, SortBenchmark::mergeSort, n -> n * (Math.log(n) / Math.log(2)));
+    }
 
-            System.out.println("Sorteringsmetode: MergeSort");
-            measureTime(arr.clone(), MergeSort::sort, size, "n log n");
+    @FunctionalInterface
+    interface SortingAlgorithm {
+        void sort(Integer[] array);
+    }
 
-            System.out.println("Sorteringsmetode: InsertionSort");
-            measureTime(arr.clone(), InsertionSort::sort, size, "n^2");
+    @FunctionalInterface
+    interface ComplexityFunction {
+        double compute(int n);
+    }
 
-            System.out.println("Sorteringsmetode: SelectionSort");
-            measureTime(arr.clone(), SelectionSort::sort, size, "n^2");
+    public static void benchmarkSort(String name, int[] sizes, SortingAlgorithm algorithm, ComplexityFunction complexity) {
+        System.out.println("\n" + name);
+        System.out.println("N\tMålt tid (s)\tTeoretisk tid (s)");
+
+        double c = 0;
+        for (int i = 0; i < sizes.length; i++) {
+            int n = sizes[i];
+            Integer[] array = generateRandomArray(n);
+
+            long startTime = System.nanoTime();
+            algorithm.sort(array);
+            long endTime = System.nanoTime();
+
+            double elapsedTime = (endTime - startTime) / 1e9; // Konverter til sekunder
+
+            if (i == 0) { // Bruk første måling til å finne c
+                c = elapsedTime / complexity.compute(n);
+            }
+
+            double theoreticalTime = c * complexity.compute(n);
+            System.out.printf("%d\t%.6f\t%.6f%n", n, elapsedTime, theoreticalTime);
         }
     }
 
-    private static void measureTime(Integer[] arr, java.util.function.Consumer<Integer[]> sorter, int size, String complexity) {
-        long startTime = System.nanoTime();
-        sorter.accept(arr);
-        long endTime = System.nanoTime();
-        double timeInSeconds = (endTime - startTime) / 1e9;
-        System.out.printf("n=%d, Tid=%.4f sekunder (%s)%n", size, timeInSeconds, complexity);
-    }
-
-    private static Integer[] generateRandomArray(int size) {
-        Integer[] arr = new Integer[size];
+    public static Integer[] generateRandomArray(int size) {
         Random rand = new Random();
+        Integer[] array = new Integer[size];
         for (int i = 0; i < size; i++) {
-            arr[i] = rand.nextInt(100000);
+            array[i] = rand.nextInt(100000);
         }
-        return arr;
+        return array;
+    }
+
+    public static void insertionSort(Integer[] arr) {
+        int n = arr.length;
+        for (int i = 1; i < n; i++) {
+            int key = arr[i];
+            int j = i - 1;
+            while (j >= 0 && arr[j] > key) {
+                arr[j + 1] = arr[j];
+                j--;
+            }
+            arr[j + 1] = key;
+        }
+    }
+
+    public static void selectionSort(Integer[] arr) {
+        int n = arr.length;
+        for (int i = 0; i < n - 1; i++) {
+            int minIdx = i;
+            for (int j = i + 1; j < n; j++) {
+                if (arr[j] < arr[minIdx]) {
+                    minIdx = j;
+                }
+            }
+            int temp = arr[minIdx];
+            arr[minIdx] = arr[i];
+            arr[i] = temp;
+        }
+    }
+
+    public static void quickSort(Integer[] arr) {
+        quickSort(arr, 0, arr.length - 1);
+    }
+
+    private static void quickSort(Integer[] arr, int low, int high) {
+        if (low < high) {
+            int pi = partition(arr, low, high);
+            quickSort(arr, low, pi - 1);
+            quickSort(arr, pi + 1, high);
+        }
+    }
+
+    private static int partition(Integer[] arr, int low, int high) {
+        int pivot = arr[high];
+        int i = low - 1;
+        for (int j = low; j < high; j++) {
+            if (arr[j] < pivot) {
+                i++;
+                swap(arr, i, j);
+            }
+        }
+        swap(arr, i + 1, high);
+        return i + 1;
+    }
+
+    private static void swap(Integer[] arr, int i, int j) {
+        int temp = arr[i];
+        arr[i] = arr[j];
+        arr[j] = temp;
+    }
+
+    public static void mergeSort(Integer[] arr) {
+        mergeSort(arr, 0, arr.length - 1);
+    }
+
+    private static void mergeSort(Integer[] arr, int left, int right) {
+        if (left < right) {
+            int mid = (left + right) / 2;
+            mergeSort(arr, left, mid);
+            mergeSort(arr, mid + 1, right);
+            merge(arr, left, mid, right);
+        }
+    }
+
+    private static void merge(Integer[] arr, int left, int mid, int right) {
+        int n1 = mid - left + 1;
+        int n2 = right - mid;
+
+        Integer[] leftArr = new Integer[n1];
+        Integer[] rightArr = new Integer[n2];
+
+        System.arraycopy(arr, left, leftArr, 0, n1);
+        System.arraycopy(arr, mid + 1, rightArr, 0, n2);
+
+        int i = 0, j = 0, k = left;
+        while (i < n1 && j < n2) {
+            if (leftArr[i] <= rightArr[j]) {
+                arr[k++] = leftArr[i++];
+            } else {
+                arr[k++] = rightArr[j++];
+            }
+        }
+        while (i < n1) arr[k++] = leftArr[i++];
+        while (j < n2) arr[k++] = rightArr[j++];
     }
 }
