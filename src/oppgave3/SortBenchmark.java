@@ -47,11 +47,6 @@ public class SortBenchmark {
             double elapsedTime = (endTime - startTime) / 1e9; // Konverter til sekunder
             double f_n = complexity.compute(n); // Beregn f(n)
 
-            // Sjekk at f_n er gyldig (større enn 0)
-            if (f_n <= 0) {
-                System.out.println("Feil: f(n) ble null eller negativ for n = " + n + ". Hopper over denne målingen.");
-                continue;
-            }
 
             if (i == 0) {  // Beregn c fra første måling
                 c = elapsedTime / f_n;
